@@ -1,9 +1,12 @@
 #include <lmic.h>
 #include <hal/hal.h>
 #include <SPI.h>
+#include <TinyGPSPlus.h>
 
 HardwareSerial Serial1(PA10, PA9);
-HardwareSerial Serial3(PA10, PA9);
+HardwareSerial Serial3(PB11, PB10);
+
+TinyGPSPlus gps;
 
 // This EUI must be in little-endian format, so least-significant-byte
 // first. When copying an EUI from ttnctl output, this means to reverse
@@ -127,6 +130,10 @@ void onEvent (ev_t ev) {
 
 void setup() {
     Serial1.begin(115200);
+    Serial3.begin(9600);
+    Serial1.setTimeout(10);
+    Serial3.setTimeout(10);
+
     delay(5000);
     Serial1.println(F("Starting"));
 
@@ -149,6 +156,25 @@ void setup() {
     Serial1.println("Poszlo");
 }
 
+uint32_t gpsTimer;
+
 void loop() {
+
+    while (Serial3.available()) {
+        gps.encode(Serial3.read());
+    }
+
+    if (millis() - gpsTimer >= 1000) {
+
+        gpsTimer = millis();
+
+        Serial1.print(gps.location.lat(), 4);
+        Serial1.print(";");
+        Serial1.print(gps.altitude.meters());
+        Serial1.print(";");
+        Serial1.println(gps.location.lng(), 4);
+        Serial1.println(gps.time.second());
+    }
+
     os_runloop_once();
 }
