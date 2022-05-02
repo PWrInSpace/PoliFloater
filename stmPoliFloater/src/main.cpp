@@ -8,40 +8,30 @@ HardwareSerial Serial3(PB11, PB10);
 
 TinyGPSPlus gps;
 
-// This EUI must be in little-endian format, so least-significant-byte
-// first. When copying an EUI from ttnctl output, this means to reverse
-// the bytes. For TTN issued EUIs the last bytes should be 0xD5, 0xB3,
-// 0x70.
+// LSB
 static const u1_t PROGMEM APPEUI[8]={ 0xEE, 0x9A, 0x7A, 0x2B, 0xE2, 0xF9, 0x81, 0x60 };
-//static const u1_t PROGMEM APPEUI[8]={ 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00 };
 void os_getArtEui (u1_t* buf) { memcpy_P(buf, APPEUI, 8);}
 
-// This should also be in little endian format, see above.
-static const u1_t PROGMEM DEVEUI[8]={ 0x46, 0xC4, 0x9B, 0xF6, 0xAD, 0xF9, 0x81, 0x60 };
-//static const u1_t PROGMEM DEVEUI[8]={ 0x82, 0xED, 0x04, 0xD0, 0x7E, 0xD5, 0xB3, 0x70 };
+// LSB
+static const u1_t PROGMEM DEVEUI[8]={ 0x43, 0x1A, 0x03, 0x3A, 0x30, 0xF9, 0x81, 0x60 };
 void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 
-// This key should be in big endian format (or, since it is not really a
-// number but a block of memory, endianness does not really apply). In
-// practice, a key taken from ttnctl can be copied as-is.
-// The key shown here is the semtech default key.
-static const u1_t PROGMEM APPKEY[16] = { 0xF8, 0xB1, 0x70, 0x1C, 0xCD, 0xA2, 0x22, 0x07, 0x35, 0x29, 0x85, 0x00, 0xD4, 0xE5, 0xD5, 0x96 };
-//static const u1_t PROGMEM APPKEY[16] = { 0xE9, 0x88, 0x1E, 0xC9, 0x8A, 0x77, 0xA5, 0x19, 0xC8, 0x14, 0x11, 0x92, 0x50, 0x54, 0x18, 0x63 };
+// MSB
+static const u1_t PROGMEM APPKEY[16] = { 0x30, 0x39, 0xCB, 0xAD, 0xB2, 0x0E, 0x00, 0xBB, 0x38, 0xCD, 0xE1, 0xE9, 0x46, 0xE8, 0x0A, 0x03 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t mydata[24];
+static uint8_t mydata[] = "PWr";
 static osjob_t sendjob;
 
-// Schedule TX every this many seconds (might become longer due to duty
-// cycle limitations).
+// Schedule TX every this many seconds
 const unsigned TX_INTERVAL = 60;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
-    .nss = PB8 /*PA15*/,
+    .nss = PB8,
     .rxtx = LMIC_UNUSED_PIN,
     .rst = PB9,
-    .dio = { PB7 /*PB12*/, PB6 /*PB1*/, LMIC_UNUSED_PIN},
+    .dio = { PB7, PB6, LMIC_UNUSED_PIN},
 };
 
 void do_send(osjob_t* j){
@@ -57,7 +47,7 @@ void do_send(osjob_t* j){
 }
 
 void onEvent (ev_t ev) {
-    Serial1.print(os_getTime());
+    Serial1.print(os_getTime() / 100000);
     Serial1.print(": ");
     switch(ev) {
         case EV_SCAN_TIMEOUT:
@@ -134,15 +124,15 @@ void setup() {
     Serial1.setTimeout(10);
     Serial3.setTimeout(10);
 
-    delay(5000);
-    Serial1.println(F("Starting"));
+    delay(3000);
+    Serial1.println("Zaczynamy");
 
     SPI.setMISO(PB4);
     SPI.setMOSI(PB5);
     SPI.setSCLK(PB3);
 
-    pinMode(PC13, OUTPUT);
-    strcpy((char*) mydata, "PWr in Space");
+    //pinMode(PC13, OUTPUT);
+    //strcpy((char*) mydata, "PWr in Space");
 
     // LMIC init
     os_init();
@@ -150,10 +140,11 @@ void setup() {
     // Reset the MAC state. Session and pending data transfers will be discarded.
     LMIC_reset();
     Serial1.println("res");
+
     // Start job (sending automatically starts OTAA too)
-    digitalWrite(PC13, 0);
+    //digitalWrite(PC13, 0);
     do_send(&sendjob);
-    Serial1.println("Poszlo");
+    Serial1.println("Poszlo do kolejki");
 }
 
 uint32_t gpsTimer;
@@ -164,16 +155,17 @@ void loop() {
         gps.encode(Serial3.read());
     }
 
-    if (millis() - gpsTimer >= 1000) {
+    if (millis() - gpsTimer >= 10000) {
 
         gpsTimer = millis();
 
-        Serial1.print(gps.location.lat(), 4);
+        Serial1.print(gps.location.lat(), 3);
         Serial1.print(";");
-        Serial1.print(gps.altitude.meters());
+        Serial1.print(gps.location.lng(), 3);
         Serial1.print(";");
-        Serial1.println(gps.location.lng(), 4);
+        Serial1.println(gps.altitude.meters(), 0);
         Serial1.println(gps.time.second());
+        Serial1.println(gps.satellites.value());
     }
 
     os_runloop_once();
