@@ -7,6 +7,7 @@ HardwareSerial Serial1(PA10, PA9);
 HardwareSerial Serial3(PB11, PB10);
 
 TinyGPSPlus gps;
+String gpsStrig;
 
 // LSB
 static const u1_t PROGMEM APPEUI[8]={ 0xEE, 0x9A, 0x7A, 0x2B, 0xE2, 0xF9, 0x81, 0x60 };
@@ -20,11 +21,11 @@ void os_getDevEui (u1_t* buf) { memcpy_P(buf, DEVEUI, 8);}
 static const u1_t PROGMEM APPKEY[16] = { 0x30, 0x39, 0xCB, 0xAD, 0xB2, 0x0E, 0x00, 0xBB, 0x38, 0xCD, 0xE1, 0xE9, 0x46, 0xE8, 0x0A, 0x03 };
 void os_getDevKey (u1_t* buf) {  memcpy_P(buf, APPKEY, 16);}
 
-static uint8_t mydata[] = "PWr";
+static uint8_t mydata[14] = "PWr";
 static osjob_t sendjob;
 
 // Schedule TX every this many seconds
-const unsigned TX_INTERVAL = 60;
+const unsigned TX_INTERVAL = 120;
 
 // Pin mapping
 const lmic_pinmap lmic_pins = {
@@ -84,7 +85,10 @@ void onEvent (ev_t ev) {
             break;
         case EV_TXCOMPLETE:
             Serial1.println(F("EV_TXCOMPLETE (includes waiting for RX windows)"));
-            digitalWrite(PC13, 1);
+            
+            digitalWrite(PB15, 1);
+            digitalWrite(PA8, 0);
+
             if (LMIC.txrxFlags & TXRX_ACK)
               Serial1.println(F("Received ack"));
             if (LMIC.dataLen) {
@@ -124,8 +128,84 @@ void setup() {
     Serial1.setTimeout(10);
     Serial3.setTimeout(10);
 
+    pinMode(PB14, OUTPUT);
+    pinMode(PB13, OUTPUT);
+    pinMode(PB15, OUTPUT);
+    pinMode(PA8, OUTPUT);
+
+    digitalWrite(PB14, 1);
+    digitalWrite(PB13, 1);
+    digitalWrite(PB15, 1);
+    digitalWrite(PA8, 1);
+
+    delay(500);
+    digitalWrite(PB13, 0);
+    delay(500);
+    digitalWrite(PB13, 1);
+    digitalWrite(PB15, 0);
+    delay(500);
+    digitalWrite(PB15, 1);
+    digitalWrite(PA8, 0);
+    delay(500);
+    digitalWrite(PA8, 1);
+
+    Serial1.println("LECIMYY");
+
+    bool encoded = false;
+
+    digitalWrite(PB13, 0);
+
+    do {
+
+        while (Serial3.available()) {
+            char tmpChar = Serial3.read();
+            gps.encode(tmpChar);
+            Serial1.print(tmpChar);
+            encoded = true;
+        }
+
+        delay(100);
+
+        /*if (encoded) {
+            encoded = false;
+
+            Serial1.println("\nPOZ:");
+            gpsStrig =  String(gps.location.lat(), 3) + ";";
+            gpsStrig += String(gps.location.lng(), 3) + ";";
+            gpsStrig += String(gps.altitude.meters(), 0) + ";";
+            gpsStrig += String(gps.time.second()) + ";";
+            gpsStrig += String(gps.satellites.value());
+            Serial1.println(gpsStrig);
+        }*/
+    
+    } while (abs(gps.location.lat()) < 0.5);
+    
+    uint8_t idx = 0;
+    int32_t dataLat = (gps.location.lat() * 1E7);
+    mydata[idx++] = dataLat >> 24;
+    mydata[idx++] = dataLat >> 16;
+    mydata[idx++] = dataLat >> 8;
+    mydata[idx++] = dataLat;
+    int32_t dataLng = (gps.location.lng() * 1E7);
+    mydata[idx++] = dataLng >> 24;
+    mydata[idx++] = dataLng >> 16;
+    mydata[idx++] = dataLng >> 8;
+    mydata[idx++] = dataLng;
+    int16_t dataAlt = (gps.altitude.meters());
+    mydata[idx++] = dataAlt >> 8;
+    mydata[idx++] = dataAlt;
+    int16_t dataSpeed = (gps.speed.mph());
+    mydata[idx++] = dataSpeed >> 8;
+    mydata[idx++] = dataSpeed;
+    uint16_t dataBatt = 3300;
+    mydata[idx++] = dataBatt >> 8;
+    mydata[idx++] = dataBatt;
+
     delay(3000);
     Serial1.println("Zaczynamy");
+
+    digitalWrite(PB13, 1);
+    digitalWrite(PB15, 0);
 
     SPI.setMISO(PB4);
     SPI.setMOSI(PB5);
@@ -158,14 +238,34 @@ void loop() {
     if (millis() - gpsTimer >= 10000) {
 
         gpsTimer = millis();
+        gpsStrig =  String(gps.location.lat(), 3) + ";";
+        gpsStrig += String(gps.location.lng(), 3) + ";";
+        gpsStrig += String(gps.altitude.meters(), 0) + ";";
+        gpsStrig += String(gps.time.second()) + ";";
+        gpsStrig += String(gps.satellites.value());
 
-        Serial1.print(gps.location.lat(), 3);
-        Serial1.print(";");
-        Serial1.print(gps.location.lng(), 3);
-        Serial1.print(";");
-        Serial1.println(gps.altitude.meters(), 0);
-        Serial1.println(gps.time.second());
-        Serial1.println(gps.satellites.value());
+        Serial1.println(gpsStrig);
+
+        uint8_t idx = 0;
+        int32_t dataLat = (gps.location.lat() * 1E7);
+        mydata[idx++] = dataLat >> 24;
+        mydata[idx++] = dataLat >> 16;
+        mydata[idx++] = dataLat >> 8;
+        mydata[idx++] = dataLat;
+        int32_t dataLng = (gps.location.lng() * 1E7);
+        mydata[idx++] = dataLng >> 24;
+        mydata[idx++] = dataLng >> 16;
+        mydata[idx++] = dataLng >> 8;
+        mydata[idx++] = dataLng;
+        int16_t dataAlt = (gps.altitude.meters());
+        mydata[idx++] = dataAlt >> 8;
+        mydata[idx++] = dataAlt;
+        int16_t dataSpeed = (gps.speed.mph());
+        mydata[idx++] = dataSpeed >> 8;
+        mydata[idx++] = dataSpeed;
+        uint16_t dataBatt = 3300;
+        mydata[idx++] = dataBatt >> 8;
+        mydata[idx++] = dataBatt;
     }
 
     os_runloop_once();
