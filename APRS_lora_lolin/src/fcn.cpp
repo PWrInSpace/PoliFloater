@@ -7,10 +7,15 @@ void loraInit() {
     LoRa.setSignalBandwidth(125E3);
     LoRa.begin(433775000);
     LoRa.setTimeout(100);
-    LoRa.setSpreadingFactor(12);
     LoRa.setTxPower(20);
-    LoRa.setCodingRate4(5);
     LoRa.enableCrc();
+}
+
+void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr) {
+
+    LoRa.setFrequency(freq);
+    LoRa.setSpreadingFactor(sf);
+    LoRa.setCodingRate4(cr);
 }
 
 void loraSend(String txString) {
@@ -54,7 +59,7 @@ String createFrame(GpsData gpsData) {
     char altString[20];
     sprintf(altString, "%06d", int(gpsData.alt * 3.28));
 
-    String frame = "SP3MIK-7>APLT00,WIDE1-1:!";
+    String frame = "SP3MIK-7>APLT00,WIDE1-2:!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
     frame += "[360/000/A=";
     frame += altString; //000390

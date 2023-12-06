@@ -15,6 +15,7 @@ struct GpsData {
 };
 
 void loraInit();
+void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr);
 void loraSend(String txString);
 String createFrame(GpsData gpsData);
 

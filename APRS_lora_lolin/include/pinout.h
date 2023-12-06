@@ -11,8 +11,8 @@
 #define LORA_RES_PIN 8
 #define LORA_D0_PIN 9
 
-#define RED_PIN 34
-#define GREEN_PIN 33
+#define RED_PIN 33
+#define GREEN_PIN 34
 #define BLUE_PIN 21
 
 #endif
