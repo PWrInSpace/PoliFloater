@@ -52,18 +52,40 @@ String create_long_aprs(double lng) {
     return lng_str;
 }
 
-String createFrame(GpsData gpsData) {
+uint16_t calculateAngle(GpsData gps1, GpsData gps2) {
+
+    const double deltaLon = gps2.lng - gps1.lng;
+
+    const double x = cos(gps2.lat * PI / 180.0) * sin(deltaLon * PI / 180.0);
+    const double y = cos(gps1.lat * PI / 180.0) * sin(gps2.lat * PI / 180.0) -
+                     sin(gps1.lat * PI / 180.0) * cos(gps2.lat * PI / 180.0) *
+                     cos(deltaLon * PI / 180.0);
+
+    int16_t bearing = atan2(x, y) * 180.0 / PI;
+
+    // Konwersja z (-180, 180] do [0, 360)
+    return (bearing < 0.0) ? (bearing + 360.0) : bearing;
+}
+
+String createFrame(GpsData gpsData, GpsData oldGpsData) {
 
     String latString = create_lat_aprs(gpsData.lat);
     String lngString = create_long_aprs(gpsData.lng);
-    char altString[20];
-    sprintf(altString, "%06d", int(gpsData.alt * 3.28));
+
+    char altString[10], speedString[10];
+    sprintf(altString, "%06d", gpsData.alt);
+    if (gpsData.speed == 0) gpsData.speed = 1;
+    sprintf(speedString, "%03d", gpsData.speed);
 
     String frame = "SP3MIK-7>APLT00,WIDE1-2:!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
-    frame += "[360/000/A=";
+    frame += "[";
+    frame += calculateAngle(gpsData, oldGpsData);
+    frame += "/";
+    frame += speedString;
+    frame += "/A=";
     frame += altString; //000390
-    frame += "LoRa Tracker";
+    frame += "T" + String(millis()/1000);
 
     return frame;
 }

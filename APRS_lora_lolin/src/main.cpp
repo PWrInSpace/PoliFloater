@@ -3,7 +3,7 @@
 #define WAIT_TIME 60000
 
 TinyGPSPlus gps;
-GpsData gpsData;
+GpsData gpsData, oldGpsData;
 uint32_t frameTimer = WAIT_TIME;
 bool isSecChannelTime;
 
@@ -27,9 +27,11 @@ void loop() {
 
             gpsData.lat = gps.location.lat();
             gpsData.lng = gps.location.lng();
-            gpsData.alt = gps.altitude.meters();
+            gpsData.alt = gps.altitude.feet();
 
             if (gpsData.lat > 1 && millis() - frameTimer > WAIT_TIME) {
+
+                if (oldGpsData.lat < 1) oldGpsData = gpsData;
 
                 if (isSecChannelTime) {
 
@@ -50,11 +52,12 @@ void loop() {
 
                 digitalWrite(BLUE_PIN, 1);
                 frameTimer = millis();
-                String txStr = createFrame(gpsData);
+                String txStr = createFrame(gpsData, oldGpsData);
                 Serial.println(txStr);
                 loraSend(txStr);
                 digitalWrite(BLUE_PIN, 0);
 
+                oldGpsData = gpsData;
             }
         }
     }

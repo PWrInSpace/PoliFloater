@@ -11,12 +11,14 @@ struct GpsData {
 
     float lat;
     float lng;
-    float alt;
+    uint16_t alt;
+    uint16_t speed;
 };
 
 void loraInit();
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr);
 void loraSend(String txString);
-String createFrame(GpsData gpsData);
+uint16_t calculateAngle(GpsData gps1, GpsData gps2);
+String createFrame(GpsData gpsData, GpsData oldGpsData);
 
 #endif
