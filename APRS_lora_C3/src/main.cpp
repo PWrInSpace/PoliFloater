@@ -18,7 +18,10 @@ void setup() {
         if (Serial) break;
     }
 
+    pinMode(LED_PIN, OUTPUT);
+    digitalWrite(LED_PIN, 1);
     loraInit();
+    Serial1.println("$PMTK886,3*2B");
 }
 
 void loop() {
@@ -26,12 +29,20 @@ void loop() {
     if (Serial1.available()) {
 
         char c = Serial1.read();
+        Serial.print(c);
         if(gps.encode(c)) {
 
             gpsData.lat = gps.location.lat();
             gpsData.lng = gps.location.lng();
             gpsData.alt = gps.altitude.feet();
             gpsData.speed = gps.speed.kmph();
+
+            if (gpsData.lat > 1) {
+
+                digitalWrite(LED_PIN, 0);
+                vTaskDelay(200);
+                digitalWrite(LED_PIN, 1);
+            }
 
             if (gpsData.lat > 1 && millis() - frameTimer > WAIT_TIME) {
 
@@ -48,12 +59,14 @@ void loop() {
                     loraSetConditions(433775000, 12, 5);
                 }
 
+                digitalWrite(LED_PIN, 0);
                 vTaskDelay(2000 / portTICK_PERIOD_MS);
 
                 frameTimer = millis();
                 String txStr = createFrame(gpsData, oldGpsData);
                 Serial.println(txStr);
                 loraSend(txStr);
+                digitalWrite(LED_PIN, 1);
 
                 oldGpsData = gpsData;
             }

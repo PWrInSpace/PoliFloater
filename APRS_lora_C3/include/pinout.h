@@ -12,5 +12,6 @@
 #define LORA_D0_PIN 7
 
 #define V_SENSE_PIN 4
+#define LED_PIN 8
 
 #endif
