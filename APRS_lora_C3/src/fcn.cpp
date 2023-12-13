@@ -5,7 +5,10 @@ void loraInit() {
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, LORA_CS_PIN);
     LoRa.setPins(LORA_CS_PIN, LORA_RES_PIN, LORA_D0_PIN);
     LoRa.setSignalBandwidth(125E3);
-    LoRa.begin(433775000);
+    
+    if (LoRa.begin(433775000)) Serial.println("LoRa dziala");
+    else Serial.println("LoRa nie dziala");
+    
     LoRa.setTimeout(100);
     LoRa.setTxPower(20);
     LoRa.enableCrc();
@@ -63,8 +66,9 @@ uint16_t calculateAngle(GpsData gps1, GpsData gps2) {
 
     int16_t bearing = atan2(x, y) * 180.0 / PI;
 
-    // Konwersja z (-180, 180] do [0, 360)
-    return (bearing < 0.0) ? (bearing + 360.0) : bearing;
+    // Konwersja z (-180, 180] do [0, 360):
+    if (bearing < 0) bearing += 360;
+    return bearing % 360;
 }
 
 String createFrame(GpsData gpsData, GpsData oldGpsData) {
@@ -75,12 +79,12 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     char altString[10], speedString[10];
     sprintf(altString, "%06d", gpsData.alt);
     if (gpsData.speed == 0) gpsData.speed = 1;
-    sprintf(speedString, "%03d", gpsData.speed);
+    sprintf(speedString, "%03d", int(gpsData.speed * 1.85));
 
     String frame = "SP3MIK-7>APLT00,WIDE1-2:!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
     frame += "[";
-    frame += calculateAngle(gpsData, oldGpsData);
+    frame += calculateAngle(oldGpsData, gpsData);
     frame += "/";
     frame += speedString;
     frame += "/A=";
