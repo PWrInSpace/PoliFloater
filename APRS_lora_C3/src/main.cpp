@@ -1,6 +1,6 @@
 #include "fcn.h"
 
-#define WAIT_TIME 60000
+#define WAIT_TIME 52000
 
 TinyGPSPlus gps;
 GpsData gpsData, oldGpsData;
@@ -51,16 +51,16 @@ void loop() {
                 if (isSecChannelTime) {
 
                     isSecChannelTime = false;
-                    loraSetConditions(434855000, 9, 7);
+                    loraSetConditions(433775000, 12, 5);
                 }
                 else {
 
                     isSecChannelTime = true;
-                    loraSetConditions(433775000, 12, 5);
+                    loraSetConditions(434855000, 9, 7);
                 }
 
                 digitalWrite(LED_PIN, 0);
-                vTaskDelay(2000 / portTICK_PERIOD_MS);
+                vTaskDelay(100 / portTICK_PERIOD_MS);
 
                 frameTimer = millis();
                 String txStr = createFrame(gpsData, oldGpsData);

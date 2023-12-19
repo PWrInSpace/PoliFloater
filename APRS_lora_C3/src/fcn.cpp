@@ -5,10 +5,10 @@ void loraInit() {
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, LORA_CS_PIN);
     LoRa.setPins(LORA_CS_PIN, LORA_RES_PIN, LORA_D0_PIN);
     LoRa.setSignalBandwidth(125E3);
-    
+
     if (LoRa.begin(433775000)) Serial.println("LoRa dziala");
     else Serial.println("LoRa nie dziala");
-    
+
     LoRa.setTimeout(100);
     LoRa.setTxPower(20);
     LoRa.enableCrc();
@@ -76,16 +76,19 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     String latString = create_lat_aprs(gpsData.lat);
     String lngString = create_long_aprs(gpsData.lng);
 
-    char altString[10], speedString[10];
+    char altString[10], speedString[20];
     sprintf(altString, "%06d", gpsData.alt);
     if (gpsData.speed == 0) gpsData.speed = 1;
-    sprintf(speedString, "%03d", int(gpsData.speed * 1.85));
+    sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), int(gpsData.speed * 1.85));
 
-    String frame = "SP3MIK-7>APLT00,WIDE1-2:!";
+    String frame = "SP3MIK-7>APLT00,WIDE1-";
+
+    if (gpsData.alt > 3000) frame += String(1);
+    else frame += String(2);
+
+    frame += ":!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
     frame += "[";
-    frame += calculateAngle(oldGpsData, gpsData);
-    frame += "/";
     frame += speedString;
     frame += "/A=";
     frame += altString; //000390
