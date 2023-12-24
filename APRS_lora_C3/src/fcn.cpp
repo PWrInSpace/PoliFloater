@@ -80,14 +80,14 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     sprintf(altString, "%06d", gpsData.alt);
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-7>APLT00,WIDE1-";
+    String frame = "SP3MIK-11>APLT00,WIDE1-";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);
 
     frame += ":!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
-    frame += "[";
+    frame += "O";
     frame += speedString;
     frame += "/A=";
     frame += altString; //000390
