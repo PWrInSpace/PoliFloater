@@ -78,8 +78,7 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
 
     char altString[10], speedString[20];
     sprintf(altString, "%06d", gpsData.alt);
-    if (gpsData.speed == 0) gpsData.speed = 1;
-    sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), int(gpsData.speed * 1.85));
+    sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
     String frame = "SP3MIK-7>APLT00,WIDE1-";
 

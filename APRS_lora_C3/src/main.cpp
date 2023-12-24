@@ -35,7 +35,7 @@ void loop() {
             gpsData.lat = gps.location.lat();
             gpsData.lng = gps.location.lng();
             gpsData.alt = gps.altitude.feet();
-            gpsData.speed = gps.speed.kmph();
+            gpsData.speed = gps.speed.knots();
 
             if (gpsData.lat > 1) {
 
