@@ -31,28 +31,51 @@ void loraSend(String txString) {
     LoRa.endPacket();
 }
 
+String addLeadingZeros(int number, int desiredLength) {
+
+    String str = String(number);
+    int currentLength = str.length();
+    if (currentLength < desiredLength) {
+        // Jeśli liczba ma mniej cyfr niż żądany, dodaj zera wiodące
+        for (int i = 0; i < desiredLength - currentLength; i++) {
+            str = "0" + str;
+        }
+    }
+    return str;
+}
+
 String create_lat_aprs(double lat) {
-    char str[20];
+
     char n_s = 'N';
     if (lat < 0) {
         n_s = 'S';
     }
+
     lat = fabs(lat);
-    sprintf(str, "%02d%05.2f%c", (int)lat, (lat - (double)((int)lat)) * 60.0, n_s);
-    String lat_str(str);
-    return lat_str;
+    //sprintf(str, "%02d%05.2f%c", (int)lat, (lat - (double)((int)lat)) * 60.0, n_s);
+
+    String str = addLeadingZeros(lat, 2);
+    str += String((lat - (double)((int)lat)) * 60.0, 2);
+    str += String(n_s);
+
+    return str;
 }
 
 String create_long_aprs(double lng) {
-    char str[20];
+
     char e_w = 'E';
     if (lng < 0) {
         e_w = 'W';
     }
+
     lng = fabs(lng);
-    sprintf(str, "%03d%05.2f%c", (int)lng, (lng - (double)((int)lng)) * 60.0, e_w);
-    String lng_str(str);
-    return lng_str;
+    //sprintf(str, "%03d%05.2f%c", (int)lng, (lng - (double)((int)lng)) * 60.0, e_w);
+
+    String str = addLeadingZeros(lng, 2);
+    str += String((lng - (double)((int)lng)) * 60.0, 2);
+    str += String(e_w);
+
+    return str;
 }
 
 uint16_t calculateAngle(GpsData gps1, GpsData gps2) {
