@@ -6,19 +6,14 @@
 #include <TinyGPS++.h>
 #include <SPI.h>
 #include <LoRa.h>
-
-struct GpsData {
-
-    float lat;
-    float lng;
-    uint16_t alt;
-    uint16_t speed;
-};
+#include <EEPROM.h>
+#include "gpsData.h"
 
 void loraInit();
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr);
 void loraSend(String txString);
 uint16_t calculateAngle(GpsData gps1, GpsData gps2);
 String createFrame(GpsData gpsData, GpsData oldGpsData);
+void goToSleep(uint16_t seconds);
 
 #endif

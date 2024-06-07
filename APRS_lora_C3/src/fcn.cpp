@@ -95,3 +95,10 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
 
     return frame;
 }
+
+void goToSleep(uint16_t seconds) {
+
+    Serial.println("Going to sleep!");
+    esp_sleep_enable_timer_wakeup(seconds * 1e6);
+    esp_deep_sleep_start();
+}
