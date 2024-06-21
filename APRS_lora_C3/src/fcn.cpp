@@ -92,7 +92,7 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     frame += speedString;
     frame += "/A=";
     frame += altString; //000390
-    frame += "T" + String(millis()/1000);
+    frame += String(getVoltage(), 2) + "V";
 
     return frame;
 }
@@ -102,4 +102,15 @@ void goToSleep(uint16_t seconds) {
     Serial.println("Going to sleep!");
     esp_sleep_enable_timer_wakeup(seconds * 1e6);
     esp_deep_sleep_start();
+}
+
+float getVoltage() {
+
+    float voltage = 0.0;
+    uint16_t adcValue = analogRead(V_SENSE_PIN);
+    if (adcValue > 0) {
+        voltage = ((adcValue / 4095.0) * (3.3 - 0.2)) * 3;
+    }
+
+    return voltage;
 }

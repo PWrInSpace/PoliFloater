@@ -1,7 +1,7 @@
 #include "fcn.h"
 
-#define WAIT_TIME_NO_FIX_S 10
-#define WAIT_TIME_FIX_S 30
+#define WAIT_TIME_NO_FIX_S 30
+#define WAIT_TIME_FIX_S 500
 
 TinyGPSPlus gps;
 GpsData gpsData, oldGpsData;
@@ -21,6 +21,7 @@ void setup() {
     digitalWrite(LED_PIN, 1);
     Serial1.println("$PMTK886,3*2B");
     EEPROM.begin(sizeof(GpsData));
+    Serial.println(getVoltage());
 }
 
 void loop() {
@@ -64,8 +65,10 @@ void loop() {
             }
             // There is no GPS fix:
             else {
+                if (millis() > 5000) {
                 // Sleep:
-                goToSleep(WAIT_TIME_NO_FIX_S);
+                    goToSleep(WAIT_TIME_NO_FIX_S);
+                }
             }
         }
     }
