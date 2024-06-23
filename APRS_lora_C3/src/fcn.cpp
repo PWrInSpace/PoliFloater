@@ -29,6 +29,8 @@ void loraSend(String txString) {
     LoRa.write(0x01);
     LoRa.write((const uint8_t *)txString.c_str(), txString.length());
     LoRa.endPacket();
+
+    LoRa.sleep();
 }
 
 String create_lat_aprs(double lat) {
