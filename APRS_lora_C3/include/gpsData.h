@@ -11,6 +11,7 @@ public:
     float lng;
     uint16_t alt;
     uint16_t speed;
+    bool lastWasPolish;
 
     bool isInSquare(float N, float S, float W, float E);
     bool isPoland();

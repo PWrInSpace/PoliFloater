@@ -12,9 +12,13 @@ void loraInit() {
     LoRa.setTimeout(100);
     LoRa.setTxPower(20);
     LoRa.enableCrc();
+
+    LoRa.sleep();
 }
 
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr) {
+
+    LoRa.idle();
 
     LoRa.setFrequency(freq);
     LoRa.setSpreadingFactor(sf);
