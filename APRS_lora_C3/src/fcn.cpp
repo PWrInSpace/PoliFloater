@@ -87,7 +87,7 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     if (gpsData.speed == 0) gpsData.speed = 1;
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-11>APLT00,WIDE";
+    String frame = "SP3MIK-12>APLT00,WIDE";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);

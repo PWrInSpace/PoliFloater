@@ -1,7 +1,8 @@
 #include "fcn.h"
 
 #define WAIT_TIME_NO_FIX_S 20
-#define WAIT_TIME_FIX_S 300
+#define WAIT_TIME_FIX_S 72
+//#define DBG
 
 TinyGPSPlus gps;
 GpsData gpsData, oldGpsData;
@@ -11,11 +12,16 @@ void setup() {
     Serial.begin(115200);
     Serial1.begin(9600, SERIAL_8N1, GPS_TX_PIN, GPS_RX_PIN);
 
+    #ifdef DBG
     for (uint8_t i = 0; i < 3; i++) {
 
         vTaskDelay(1000 / portTICK_PERIOD_MS);
         if (Serial) break;
     }
+    #endif
+    #ifndef DBG
+    vTaskDelay(200 / portTICK_PERIOD_MS);
+    #endif
 
     pinMode(LED_PIN, OUTPUT);
     digitalWrite(LED_PIN, 1);
@@ -41,7 +47,12 @@ void loop() {
             gpsData.speed = gps.speed.knots();
             digitalWrite(LED_PIN, 1);
 
-            if (millis() > 7000) {
+            uint16_t gpsMaxWait_ms = 2500;
+            #ifdef DBG
+            gpsMaxWait_ms = 7000;
+            #endif
+
+            if (millis() > gpsMaxWait_ms) {
                 // There is GPS fix:
                 if (gpsData.lat > 1) {
 
