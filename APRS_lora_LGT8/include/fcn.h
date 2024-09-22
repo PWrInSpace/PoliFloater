@@ -22,5 +22,6 @@ void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr);
 void loraSend(String txString);
 uint16_t calculateAngle(GpsData gps1, GpsData gps2);
 String createFrame(GpsData gpsData, GpsData oldGpsData);
+bool isPoland(GpsData gpsData);
 
 #endif

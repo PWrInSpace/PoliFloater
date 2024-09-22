@@ -1,6 +1,6 @@
 #include "fcn.h"
 
-#define WAIT_TIME 52000
+#define WAIT_TIME 73214
 
 TinyGPSPlus gps;
 GpsData gpsData, oldGpsData;
@@ -14,7 +14,6 @@ void setup() {
 
     loraInit();
     Serial1.println("$PMTK886,3*2B");
-    pinMode(A0, INPUT);
 
     delay(100);
 
@@ -36,11 +35,12 @@ void loop() {
 
             Serial.println(gps.satellites.value());
 
-            if (gpsData.lat > 1 && millis() - frameTimer > WAIT_TIME) {
+            if (millis() > 2500 && gpsData.lat > 1) {
 
                 if (oldGpsData.lat < 1) oldGpsData = gpsData;
 
-                loraSetConditions(434855000, 9, 7);
+                if (isPoland(gpsData)) loraSetConditions(434855000, 9, 7);
+                else loraSetConditions(433775000, 12, 5);
                 delay(100);
 
                 frameTimer = millis();
@@ -48,7 +48,16 @@ void loop() {
                 Serial.println(txStr);
                 loraSend(txStr);
 
+                delay(6000);
+                LoRa.setTxPower(14);
+                delay(1000);
+                loraSend(txStr);
+                delay(100);
+
+                LoRa.sleep();
+
                 oldGpsData = gpsData;
+                delay(WAIT_TIME);
             }
         }
     }

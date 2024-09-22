@@ -10,11 +10,15 @@ void loraInit() {
     else Serial.println("LoRa nie dziala");
 
     LoRa.setTimeout(100);
-    LoRa.setTxPower(20);
+    LoRa.setTxPower(10);
     LoRa.enableCrc();
+
+    LoRa.sleep();
 }
 
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr) {
+
+    LoRa.idle();
 
     LoRa.setFrequency(freq);
     LoRa.setSpreadingFactor(sf);
@@ -71,7 +75,7 @@ String create_long_aprs(double lng) {
     lng = fabs(lng);
     //sprintf(str, "%03d%05.2f%c", (int)lng, (lng - (double)((int)lng)) * 60.0, e_w);
 
-    String str = addLeadingZeros(lng, 2);
+    String str = addLeadingZeros(lng, 3);
     str += String((lng - (double)((int)lng)) * 60.0, 2);
     str += String(e_w);
 
@@ -103,7 +107,7 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     sprintf(altString, "%06d", gpsData.alt);
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-11>APLT00,WIDE1-";
+    String frame = "SP3MIK-12>APLT00,WIDE1-";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);
@@ -117,4 +121,22 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     frame += "T" + String(millis()/1000);
 
     return frame;
+}
+
+bool isInSquare(GpsData gpsData, float N, float S, float W, float E) {
+
+    return (
+        gpsData.lat > S && gpsData.lat < N &&
+        gpsData.lng > W && gpsData.lng < E
+    );
+}
+
+bool isPoland(GpsData gpsData) {
+
+    const float poland_N = 54;
+    const float poland_S = 50.5;
+    const float poland_W = 15;
+    const float poland_E = 23.5;
+
+    return isInSquare(gpsData, poland_N, poland_S, poland_W, poland_E);
 }
