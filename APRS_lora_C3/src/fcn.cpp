@@ -12,9 +12,13 @@ void loraInit() {
     LoRa.setTimeout(100);
     LoRa.setTxPower(20);
     LoRa.enableCrc();
+
+    LoRa.sleep();
 }
 
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr) {
+
+    LoRa.idle();
 
     LoRa.setFrequency(freq);
     LoRa.setSpreadingFactor(sf);
@@ -29,6 +33,8 @@ void loraSend(String txString) {
     LoRa.write(0x01);
     LoRa.write((const uint8_t *)txString.c_str(), txString.length());
     LoRa.endPacket();
+
+    LoRa.sleep();
 }
 
 String create_lat_aprs(double lat) {
@@ -78,20 +84,39 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
 
     char altString[10], speedString[20];
     sprintf(altString, "%06d", gpsData.alt);
+    if (gpsData.speed == 0) gpsData.speed = 1;
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-11>APLT00,WIDE1-";
+    String frame = "SP3MIK-12>APLT00,WIDE";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);
 
-    frame += ":!";
+    frame += "-1:!";
     frame += latString + "/" + lngString; //5106.57N/01703.45E
     frame += "O";
     frame += speedString;
     frame += "/A=";
     frame += altString; //000390
-    frame += "T" + String(millis()/1000);
+    frame += String(getVoltage(), 2) + "V";
 
     return frame;
+}
+
+void goToSleep(uint16_t seconds) {
+
+    Serial.println("Going to sleep!");
+    esp_sleep_enable_timer_wakeup(seconds * 1e6);
+    esp_deep_sleep_start();
+}
+
+float getVoltage() {
+
+    float voltage = 0.0;
+    uint16_t adcValue = analogRead(V_SENSE_PIN);
+    if (adcValue > 0) {
+        voltage = ((adcValue / 4095.0) * (3.3 - 0.2)) * 3;
+    }
+
+    return voltage;
 }
