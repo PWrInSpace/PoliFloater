@@ -71,14 +71,19 @@ void loop() {
                     }
                     vTaskDelay(100 / portTICK_PERIOD_MS);
 
-                    digitalWrite(LED_PIN, 0);
                     String txStr = createFrame(gpsData, oldGpsData);
                     Serial.println(txStr);
-                    loraSend(txStr);
-                    digitalWrite(LED_PIN, 1);
+
+                    if (!isDistanceEnough(gpsData, oldGpsData)) {
+                        vTaskDelay(41357 / portTICK_PERIOD_MS);
+                    }
 
                     EEPROM.put(0, gpsData);
                     EEPROM.commit();
+
+                    digitalWrite(LED_PIN, 0);
+                    loraSend(txStr);
+                    digitalWrite(LED_PIN, 1);
 
                     vTaskDelay(100 / portTICK_PERIOD_MS);
 

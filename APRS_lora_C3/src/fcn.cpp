@@ -10,7 +10,7 @@ void loraInit() {
     else Serial.println("LoRa nie dziala");
 
     LoRa.setTimeout(100);
-    LoRa.setTxPower(20);
+    LoRa.setTxPower(12);
     LoRa.enableCrc();
 
     LoRa.sleep();
@@ -87,7 +87,7 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     if (gpsData.speed == 0) gpsData.speed = 1;
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-12>APLT00,WIDE";
+    String frame = "SP3MIK-13>APLT00,WIDE";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);
@@ -119,4 +119,12 @@ float getVoltage() {
     }
 
     return voltage;
+}
+
+bool isDistanceEnough(GpsData gpsData, GpsData oldGpsData) {
+
+    float latDiff = fabs(gpsData.lat - oldGpsData.lat);
+    float lngDiff = fabs(gpsData.lng - oldGpsData.lng);
+
+    return latDiff > 0.001 || lngDiff > 0.001;
 }

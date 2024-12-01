@@ -16,5 +16,6 @@ uint16_t calculateAngle(GpsData gps1, GpsData gps2);
 String createFrame(GpsData gpsData, GpsData oldGpsData);
 void goToSleep(uint16_t seconds);
 float getVoltage();
+bool isDistanceEnough(GpsData gpsData, GpsData oldGpsData);
 
 #endif
