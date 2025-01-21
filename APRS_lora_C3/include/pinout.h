@@ -4,6 +4,9 @@
 #define GPS_TX_PIN 20
 #define GPS_RX_PIN 21
 
+#define SDA_PIN 2
+#define SCL_PIN 3
+
 #define SCK_PIN 5
 #define MISO_PIN 1
 #define MOSI_PIN 10

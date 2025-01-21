@@ -8,6 +8,10 @@
 #include <LoRa.h>
 #include <EEPROM.h>
 #include "gpsData.h"
+#include <Wire.h>
+#include <Adafruit_BMP085.h>
+
+extern Adafruit_BMP085 bmp;
 
 void loraInit();
 void loraSetConditions(uint32_t freq, uint8_t sf, uint8_t cr);

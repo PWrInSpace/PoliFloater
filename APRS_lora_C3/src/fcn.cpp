@@ -1,5 +1,7 @@
 #include "fcn.h"
 
+Adafruit_BMP085 bmp;
+
 void loraInit() {
 
     SPI.begin(SCK_PIN, MISO_PIN, MOSI_PIN, LORA_CS_PIN);
@@ -10,7 +12,7 @@ void loraInit() {
     else Serial.println("LoRa nie dziala");
 
     LoRa.setTimeout(100);
-    LoRa.setTxPower(12);
+    LoRa.setTxPower(14);
     LoRa.enableCrc();
 
     LoRa.sleep();
@@ -83,11 +85,11 @@ String createFrame(GpsData gpsData, GpsData oldGpsData) {
     String lngString = create_long_aprs(gpsData.lng);
 
     char altString[10], speedString[20];
-    sprintf(altString, "%06d", gpsData.alt);
+    sprintf(altString, "%06d", int((float)gpsData.alt * 3.28));
     if (gpsData.speed == 0) gpsData.speed = 1;
     sprintf(speedString, "%03d/%03d", calculateAngle(oldGpsData, gpsData), gpsData.speed);
 
-    String frame = "SP3MIK-13>APLT00,WIDE";
+    String frame = "SP3MIK-12>APLT00,WIDE";
 
     if (gpsData.alt > 3000) frame += String(1);
     else frame += String(2);
@@ -115,7 +117,7 @@ float getVoltage() {
     float voltage = 0.0;
     uint16_t adcValue = analogRead(V_SENSE_PIN);
     if (adcValue > 0) {
-        voltage = ((adcValue / 4095.0) * (3.3 - 0.2)) * 3;
+        voltage = ((adcValue / 4095.0) * (3.3 - 0.2)) * 2.8;
     }
 
     return voltage;
